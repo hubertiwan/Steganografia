@@ -6,3 +6,4 @@ venv/
 results/
 .ipynb_checkpoints/
 app_data/
+stegolab_data/
