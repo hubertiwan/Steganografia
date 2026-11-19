@@ -4,7 +4,7 @@ Run with:  pytest -q
 """
 import numpy as np
 
-from synthid_watermark import TournamentWatermark
+from watermarks.synthid import TournamentWatermark
 
 V = 1000
 

@@ -4,9 +4,9 @@ Generates texts with and without the watermark, runs detection, measures TPR at 
 fixed FPR, tests robustness to random edits and saves plots to the output folder.
 
 Usage:
-    python demo.py                                   # defaults (Qwen2.5-0.5B-Instruct)
-    python demo.py --model facebook/opt-1.3b --no-chat-template
-    python demo.py --num-prompts 10 --max-new-tokens 100   # quicker run
+    python -m demos.demo_unigram                                   # defaults (Qwen2.5-0.5B-Instruct)
+    python -m demos.demo_unigram --model facebook/opt-1.3b --no-chat-template
+    python -m demos.demo_unigram --num-prompts 10 --max-new-tokens 100   # quicker run
 """
 import argparse
 import html
@@ -15,7 +15,7 @@ import os
 import numpy as np
 import torch
 
-from unigram_watermark import UnigramWatermark, generate, random_edits, tpr_at_fpr
+from watermarks.unigram import UnigramWatermark, generate, random_edits, tpr_at_fpr
 
 PROMPTS = [
     "Why is the sky blue?", "How do airplanes stay in the air?", "Why do we need to sleep?",

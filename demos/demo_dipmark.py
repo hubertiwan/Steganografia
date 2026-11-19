@@ -7,9 +7,9 @@ The detection score used for TPR / FPR and the plot is Phi * sqrt(n). The paper'
 threshold Phi >= 1.517 / sqrt(n) (FPR 1%) is then simply score >= 1.517 for any length.
 
 Usage:
-    python demo_dipmark.py                                    # defaults (Qwen2.5-0.5B-Instruct)
-    python demo_dipmark.py --model facebook/opt-1.3b --no-chat-template
-    python demo_dipmark.py --num-prompts 5 --max-new-tokens 100   # quicker run
+    python -m demos.demo_dipmark                                    # defaults (Qwen2.5-0.5B-Instruct)
+    python -m demos.demo_dipmark --model facebook/opt-1.3b --no-chat-template
+    python -m demos.demo_dipmark --num-prompts 5 --max-new-tokens 100   # quicker run
 """
 import argparse
 import math
@@ -18,9 +18,9 @@ import os
 import numpy as np
 import torch
 
-from dipmark_watermark import DiPmarkWatermark, generate
-from synthid_watermark import encode_prompt
-from unigram_watermark import random_edits, tpr_at_fpr
+from watermarks.dipmark import DiPmarkWatermark, generate
+from watermarks.synthid import encode_prompt
+from watermarks.unigram import random_edits, tpr_at_fpr
 
 PROMPTS = [
     "Why is the sky blue?", "How do airplanes stay in the air?", "Why do we need to sleep?",

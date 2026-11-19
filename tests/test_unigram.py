@@ -5,7 +5,7 @@ Run with:  pytest -q
 import numpy as np
 import pytest
 
-from unigram_watermark import UnigramWatermark
+from watermarks.unigram import UnigramWatermark
 
 V = 5000
 

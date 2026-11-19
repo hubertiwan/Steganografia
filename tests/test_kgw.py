@@ -4,7 +4,7 @@ Run with:  pytest -q
 """
 import numpy as np
 
-from kgw_watermark import KGWWatermark
+from watermarks.kgw import KGWWatermark
 
 V = 2000
 

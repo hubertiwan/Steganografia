@@ -4,7 +4,7 @@ Run with:  pytest -q
 """
 import numpy as np
 
-from dipmark_watermark import DiPmarkWatermark
+from watermarks.dipmark import DiPmarkWatermark
 
 V = 2000
 
