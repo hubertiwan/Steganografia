@@ -7,7 +7,7 @@ from .. import algorithms, charts, reports
 from .widgets import ChartView, TokenView, fill_table, fit_table_height, legend_text, make_table
 
 
-MPAC_NOTE = ("Dla MPAC o wyniku decyduje p-wartość. Wartość z ze wzoru (1) z pracy jest zawyżona także dla tekstu bez znaku (zob. docs/mpac.md), więc sama w sobie nie świadczy o wykryciu.")
+MPAC_NOTE = ("Dla MPAC i MPTour o wyniku decyduje p-wartość. Wartość z jest zawyżona także dla tekstu bez znaku (zob. docs/mpac.md, docs/mptour.md), więc sama w sobie nie świadczy o wykryciu.")
 
 
 def _details_text(detection):

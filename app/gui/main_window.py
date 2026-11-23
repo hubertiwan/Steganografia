@@ -124,7 +124,7 @@ class MainWindow(QMainWindow):
         QMessageBox.about(self, APP_NAME,
                           f"<b>{APP_NAME} {VERSION}</b><br>Aplikacja do demonstracji i testowania algorytmów "
                           "znakowania wodnego tekstu z repozytorium Steganografia (Unigram-Watermark, SynthID-Text, "
-                          "KGW, DiPmark, MPAC).<br>Projekt inżynierski.")
+                          "KGW, DiPmark, MPAC, MPTour).<br>Projekt inżynierski.")
 
     def closeEvent(self, event):
         if self.state.job is not None:

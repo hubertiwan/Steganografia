@@ -172,7 +172,8 @@ class ParamStack(QWidget):
 # ---------------------------------------------------------------- colored tokens
 def legend_text(algo_id):
     green, red = {"synthid": ("średnia g > 0.5", "średnia g < 0.5"),
-                  "mpac": ("lista odczytanej cyfry", "inna lista")}.get(algo_id, ("lista zielona", "lista czerwona"))
+                  "mpac": ("lista odczytanej cyfry", "inna lista"),
+                  "mptour": ("średnia g > 0.5", "średnia g < 0.5")}.get(algo_id, ("lista zielona", "lista czerwona"))
     return (f"<span style='background:{GREEN_BG}'>&nbsp;{green}&nbsp;</span>&nbsp; "
             f"<span style='background:{RED_BG}'>&nbsp;{red}&nbsp;</span>&nbsp; "
             f"<span style='color:{NOT_SCORED}'>szary – token nieoceniany</span>")

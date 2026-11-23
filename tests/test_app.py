@@ -2,7 +2,7 @@
 
 Round trip for every algorithm: prompt + key -> generation with the watermark -> detection.
 The algorithms are probabilistic, so the checks are: detected in watermarked text, not detected
-in plain text and not detected with a wrong key (fixed seeds, large margins). For MPAC also:
+in plain text and not detected with a wrong key (fixed seeds, large margins). For MPAC and MPTour also:
 the decoded message equals the embedded one.
 """
 import math
@@ -21,10 +21,10 @@ def defaults(algo_id):
 
 
 def test_all_repository_algorithms_are_listed():
-    assert IDS == ["unigram", "synthid", "kgw", "dipmark", "mpac"]
-    from watermarks import dipmark, kgw, mpac, synthid, unigram
+    assert IDS == ["unigram", "synthid", "kgw", "dipmark", "mpac", "mptour"]
+    from watermarks import dipmark, kgw, mpac, mptour, synthid, unigram
     classes = [unigram.UnigramWatermark, synthid.TournamentWatermark, kgw.KGWWatermark,
-               dipmark.DiPmarkWatermark, mpac.MPACWatermark]
+               dipmark.DiPmarkWatermark, mpac.MPACWatermark, mptour.MPTourWatermark]
     for algo_id, cls in zip(IDS, classes):
         assert isinstance(algorithms.get(algo_id).build(defaults(algo_id), 1000), cls)
 
@@ -32,10 +32,11 @@ def test_all_repository_algorithms_are_listed():
 def test_defaults_match_the_demo_scripts():
     """Default parameters must be the ones in the demo scripts (taken from the papers)."""
     import sys
-    from demos import demo_dipmark, demo_kgw, demo_mpac, demo_synthid, demo_unigram
+    from demos import demo_dipmark, demo_kgw, demo_mpac, demo_mptour, demo_synthid, demo_unigram
     argv, sys.argv = sys.argv, ["demo"]
     try:
-        u, s, k, d, m = (mod.parse_args() for mod in (demo_unigram, demo_synthid, demo_kgw, demo_dipmark, demo_mpac))
+        u, s, k, d, m, t = (mod.parse_args() for mod in (demo_unigram, demo_synthid, demo_kgw, demo_dipmark, demo_mpac,
+                                                         demo_mptour))
     finally:
         sys.argv = argv
     assert defaults("unigram") == {"key": u.key, "gamma": u.gamma, "delta": u.delta, "tau": u.tau,
@@ -49,6 +50,9 @@ def test_defaults_match_the_demo_scripts():
     p = defaults("mpac")
     assert (p["key"], len(p["message"]), p["gamma"], p["delta"], p["context_size"], p["alpha"], p["temperature"],
             p["top_p"]) == (m.key, m.bits, m.gamma, m.delta, m.context_size, m.alpha, m.temperature, m.top_p)
+    p = defaults("mptour")
+    assert (p["key"], len(p["message"]), p["radix"], p["context_size"], p["num_layers"], p["alpha"], p["temperature"],
+            p["top_k"]) == (t.key, t.bits, t.radix, t.context_size, t.num_layers, t.alpha, t.temperature, t.top_k)
 
 
 @pytest.mark.parametrize("algo_id,bad", [
@@ -57,6 +61,7 @@ def test_defaults_match_the_demo_scripts():
     ("kgw", {"delta": -1}), ("dipmark", {"alpha": 0.6}), ("dipmark", {"fpr": 0}),
     ("mpac", {"message": "0102"}), ("mpac", {"message": ""}), ("mpac", {"message": "1" * 65}),
     ("mpac", {"gamma": 0.6}), ("mpac", {"nothing": 1}),
+    ("mptour", {"radix": 1}), ("mptour", {"message": "012"}), ("mptour", {"num_layers": 11}),
 ])
 def test_bad_parameters_are_rejected(algo_id, bad):
     with pytest.raises(AppError) as e:
@@ -75,7 +80,7 @@ def test_demo_round_trip(algo_id, fake_lm):
     assert len(wm["pieces"]) == len(wm["annotation"]) == len(wm["tokens"])
     assert "".join(wm["pieces"]) == wm["text"]
     assert wm["perplexity"] > 1 and plain["perplexity"] > 1
-    if algo_id == "mpac":
+    if algo_id in ("mpac", "mptour"):
         assert wm["detection"]["message"] == "10110010" and wm["detection"]["bit_accuracy"] == 1.0
 
 
@@ -90,7 +95,7 @@ def test_series_round_trip(algo_id, fake_lm):
     assert summary["auc"] == 1.0
     rates = [e["detected"]["rate"] for e in r["edits"]]
     assert rates[0] == 1.0 and rates[-1] <= rates[0]
-    if algo_id == "mpac":
+    if algo_id in ("mpac", "mptour"):
         assert summary["bit_accuracy"] == 1.0
         assert r["edits"][-1]["bit_accuracy"] < 1.0
 
@@ -119,6 +124,8 @@ def test_annotations_agree_with_detectors(fake_lm):
             assert d["details"]["zielone tokeny"].startswith(f"{sum(ann)} z {d['n']}"), algo_id
         if algo_id == "mpac":
             assert sum(ann) == int(d["details"]["tokeny w wybranych listach"].split()[0])
+        if algo_id == "mptour":
+            assert round(sum(ann) * 8) == int(d["details"]["suma g odczytanych cyfr"].split()[0])
 
 
 def test_edit_text(fake_lm):

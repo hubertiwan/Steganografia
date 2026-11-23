@@ -48,8 +48,11 @@ class TournamentWatermark:
 
         The candidates are drawn i.i.d., so neighbouring pairs are already random pairs
         and no shuffling is needed between layers."""
+        return self.tournament(probs, self.seed(context), rng)
+
+    def tournament(self, probs, seed, rng):
+        """The m knockout layers for a given seed (also used by the multi-bit MPTour)."""
         candidates = rng.choice(len(probs), size=self.num_candidates, p=probs)
-        seed = self.seed(context)
 
         for layer in range(1, self.num_layers + 1):
             winners = []

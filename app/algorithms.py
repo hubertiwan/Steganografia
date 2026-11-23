@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from math import log, sqrt
 
-from watermarks import dipmark, kgw, mpac, synthid, unigram
+from watermarks import dipmark, kgw, mpac, mptour, synthid, unigram
 
 from .errors import AppError
 
@@ -280,6 +280,43 @@ class MPAC(Algorithm):
         return out
 
 
+# ---------------------------------------------------------------- MPTour (own: MPAC + SynthID)
+class MPTour(Algorithm):
+    def build(self, params, vocab_size):
+        return mptour.MPTourWatermark(params["key"], len(params["message"]), params["radix"],
+                                      params["context_size"], params["num_layers"])
+
+    def generate(self, lm, prompt, wm, params, max_new_tokens, seed):
+        return mptour.generate(lm.model, lm.tokenizer, prompt, wm=wm, message=params["message"],
+                               max_new_tokens=max_new_tokens, temperature=params["temperature"],
+                               top_k=params["top_k"], seed=seed, use_chat_template=lm.use_chat_template)
+
+    def detect(self, wm, tokens, params):
+        d = wm.detect(tokens, alpha=params["alpha"])
+        details = {"odczytana wiadomość": d["message"],
+                   "suma g odczytanych cyfr": f"{d['w']} z {d['n'] * wm.num_layers}"}
+        if d["empty_positions"]:
+            details["pozycje bez tokenów"] = f"{d['empty_positions']} z {wm.positions} (odczytane jako 0)"
+        return {"score": d["z"], "threshold": None, "p_value": d["p_value"], "n": d["n"],
+                "detected": bool(d["watermarked"]), "message": d["message"],
+                "bit_accuracy": mptour.bit_accuracy(params["message"], d["message"]), "details": details}
+
+    def annotate(self, wm, tokens):
+        """Mean g-value of every token for the decoded digit of its position, same rules as count()."""
+        tokens = [int(t) for t in tokens]
+        digits = wm.count(tokens)[0].argmax(axis=1)  # the same argmax as in decode()
+        out = [None] * len(tokens)
+        seen = set()
+        for t in range(wm.context_size, len(tokens)):
+            context = tuple(tokens[t - wm.context_size:t])
+            if context in seen:
+                continue
+            seen.add(context)
+            position, sums = wm.token_g_sums(tokens[t], wm.seed(context))
+            out[t] = sums[digits[position]] / wm.num_layers
+        return out
+
+
 # ---------------------------------------------------------------- list
 ALGORITHMS = {a.id: a for a in [
     Unigram(
@@ -371,6 +408,30 @@ ALGORITHMS = {a.id: a for a in [
                 Param("alpha", "α (FPR detektora)", "float", 0.001, "Wykryty, gdy p-wartość ≤ α.",
                       low=0, high=0.5, step=0.001, decimals=4, group="detection", low_open=True)]
         + _sampling(0.7, top_p=1.0)),
+    MPTour(
+        id="mptour", name="MPTour (wielobitowy, własny)", color="#7b5ce8", doc="mptour.md", score_name="z",
+        multibit=True,
+        paper="Własne połączenie MPAC (Yoo i in., NAACL 2024) i SynthID-Text (Dathathri i in., Nature 2024)",
+        summary="Wiadomość b-bitowa jak w MPAC, ale token wybiera turniej SynthID zamiast bonusu δ. "
+                "Każda cyfra wiadomości ma własne g-funkcje, więc rozkład modelu jest zachowany (uśredniając po kluczach).",
+        steps=["Wiadomość zapisana w systemie o podstawie r, b̃ = ⌈b / log₂ r⌉ pozycji.",
+               "Ziarno z klucza i H poprzednich tokenów wybiera pozycję p wiadomości.",
+               "Cyfra m[p] wybiera g-funkcje (osobny hash dla każdej cyfry), 2^m kandydatów gra m rund turnieju.",
+               "Odczyt: liczniki S[p][cyfra] = suma g-wartości, na każdej pozycji wygrywa największy.",
+               "Detekcja: dokładna p-wartość dla sumy maksimów liczników (szczegóły w docs/mptour.md)."],
+        limitations=["Sygnał na token jest słabszy niż w MPAC z δ = 2, więc wiadomość potrzebuje dłuższego tekstu.",
+                     "Koszt rośnie z liczbą kandydatów 2^m."],
+        params=[_key_param(),
+                Param("message", "Wiadomość (bity)", "bits", "10110010", "Od 1 do 64 znaków 0 lub 1."),
+                Param("radix", "r (podstawa)", "int", 4, "Liczba możliwych wartości jednej cyfry wiadomości.",
+                      low=2, high=16),
+                Param("context_size", "H (kontekst)", "int", 4, "Liczba poprzednich tokenów w ziarnie.",
+                      low=1, high=16),
+                Param("num_layers", "m (rundy turnieju)", "int", 8, "Turniej ma 2^m kandydatów, maksymalnie 10.",
+                      low=1, high=10),
+                Param("alpha", "α (FPR detektora)", "float", 0.001, "Wykryty, gdy p-wartość ≤ α.",
+                      low=0, high=0.5, step=0.001, decimals=4, group="detection", low_open=True)]
+        + _sampling(0.7, top_k=100)),
 ]}
 
 

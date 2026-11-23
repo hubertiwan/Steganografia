@@ -14,12 +14,13 @@ statystycznym, bez dostępu do modelu.
 | KGW | Kirchenbauer i in., ICML 2023 | 1 bit | [docs/kgw.md](docs/kgw.md) |
 | DiPmark | Wu i in., ICML 2024 | 1 bit | [docs/dipmark.md](docs/dipmark.md) |
 | MPAC | Yoo i in., NAACL 2024 | wiadomość b-bitowa (np. ID użytkownika) | [docs/mpac.md](docs/mpac.md) |
+| MPTour (własny) | MPAC + SynthID-Text | wiadomość b-bitowa, bez zmiany rozkładu modelu | [docs/mptour.md](docs/mptour.md) |
 
 ## Struktura
 
 ```
 watermarks/          algorytmy, każdy w osobnym pakiecie:
-    unigram/  synthid/  kgw/  dipmark/  mpac/
+    unigram/  synthid/  kgw/  dipmark/  mpac/  mptour/
         core.py          klasa znaku wodnego (osadzanie i detekcja)
         generation.py    generowanie tekstu modelem z Hugging Face
 demos/               skrypty z eksperymentami w konsoli (jeden na algorytm)
@@ -91,6 +92,7 @@ python -m demos.demo_synthid
 python -m demos.demo_kgw
 python -m demos.demo_dipmark
 python -m demos.demo_mpac
+python -m demos.demo_mptour
 python -m demos.demo_kgw --num-prompts 5 --max-new-tokens 100   # szybciej
 ```
 
@@ -99,8 +101,8 @@ Każde demo wypisuje wyniki detekcji, perplexity i odporność na zmiany, a wykr
 ## Uwagi
 
 - Perplexity liczy ten sam model, który wygenerował tekst, więc to tylko zgrubna ocena jakości.
-- W MPAC decyzja o wykryciu opiera się na dokładnej p-wartości, a nie na progu dla z ze wzoru
-  z pracy, bo to z jest zawyżone także dla tekstu bez znaku (szczegóły w [docs/mpac.md](docs/mpac.md)).
+- W MPAC i MPTour decyzja o wykryciu opiera się na dokładnej p-wartości, a nie na progu dla z ze wzoru
+  z pracy, bo to z jest zawyżone także dla tekstu bez znaku (szczegóły w [docs/mpac.md](docs/mpac.md) i [docs/mptour.md](docs/mptour.md)).
 - Każdy algorytm ma domyślne parametry ze swojej publikacji, więc progi detekcji i sposób
   próbkowania się różnią. W porównaniu skuteczność najlepiej oceniać przez AUC i TPR przy tym samym FPR.
 - Nie są odtworzone ataki parafrazą (wymagają dodatkowych modeli).
