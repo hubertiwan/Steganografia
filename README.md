@@ -56,7 +56,7 @@ Inny model albo folder z pobranym modelem można wskazać w menu **Plik → Wczy
 
 Zakładki:
 
-- **Algorytmy** – opis każdego algorytmu, parametry, notatka z `docs/` i przypisane dokumenty PDF.
+- **Algorytmy** – opis każdego algorytmu, parametry i notatka z `docs/`.
 - **Demonstracja** – jedno polecenie: tekst ze znakiem i bez znaku obok siebie, tokeny pokolorowane
   według detektora, wynik detekcji (też z innym kluczem), dla MPAC odczytana wiadomość. Tekst ze
   znakiem można zmienić ręcznie albo losowo i sprawdzić jeszcze raz.
@@ -66,10 +66,10 @@ Zakładki:
   tabela tekstów.
 - **Porównanie** – kilka algorytmów na tych samych poleceniach, ziarnach i długości tekstu.
 - **Historia** – wszystkie uruchomienia (także przerwane i z błędem) z parametrami i wynikami.
-- **Dokumenty PDF** – import publikacji, podgląd stron, wyszukiwanie, przypisanie do algorytmu.
+- **Pomoc** – opis możliwości aplikacji, kolorów tokenów i metryk oraz wskazówki.
 
-Każdy wynik można zapisać jako PDF (raport z tabelami i wykresami), CSV albo JSON. Historia i
-zaimportowane PDF-y są w folderze `app_data/` (nie trafia do gita).
+Każdy wynik można zapisać jako PDF (raport z tabelami i wykresami), CSV albo JSON. Historia jest
+zapisywana w folderze `app_data/` (nie trafia do gita).
 
 Długie obliczenia działają w osobnym wątku, więc okno nie zamarza, a test można przerwać.
 Na procesorze generowanie 100 tokenów modelem 0.5B trwa kilka sekund, więc test na 20 poleceniach

@@ -13,9 +13,11 @@ from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QDoubleS
 from .. import algorithms, experiments, history, reports
 from ..errors import AppError
 
-GREEN_BG = "#c9efd3"
-RED_BG = "#f8d3cf"
-NOT_SCORED = "#9a9a9a"
+# token highlight colors (Demonstracja, Sprawdź tekst, Pomoc); change them here
+GREEN_BG = "#a6e3b4"     # background of a "good" token (green list / g > 0.5 / list of the decoded digit)
+RED_BG = "#f5b1a9"       # background of a "bad" token
+TOKEN_TEXT = "#111111"   # text color on the colored tokens, always dark so it is readable on both backgrounds
+NOT_SCORED = "#7a7a7a"   # text color of the tokens the detector skips
 
 
 def show_error(parent, exc, tb=None):
@@ -174,8 +176,9 @@ def legend_text(algo_id):
     green, red = {"synthid": ("średnia g > 0.5", "średnia g < 0.5"),
                   "mpac": ("lista odczytanej cyfry", "inna lista"),
                   "mptour": ("średnia g > 0.5", "średnia g < 0.5")}.get(algo_id, ("lista zielona", "lista czerwona"))
-    return (f"<span style='background:{GREEN_BG}'>&nbsp;{green}&nbsp;</span>&nbsp; "
-            f"<span style='background:{RED_BG}'>&nbsp;{red}&nbsp;</span>&nbsp; "
+    green, red = html.escape(green), html.escape(red)  # "<" in the label would cut the rest of the text
+    return (f"<span style='background:{GREEN_BG}; color:{TOKEN_TEXT}'>&nbsp;{green}&nbsp;</span>&nbsp; "
+            f"<span style='background:{RED_BG}; color:{TOKEN_TEXT}'>&nbsp;{red}&nbsp;</span>&nbsp; "
             f"<span style='color:{NOT_SCORED}'>szary – token nieoceniany</span>")
 
 
@@ -183,6 +186,7 @@ class TokenView(QTextBrowser):
     def __init__(self):
         super().__init__()
         self.setMinimumHeight(150)
+        self.setStyleSheet(f"QTextBrowser {{ background: white; color: {TOKEN_TEXT}; }}")  # also in dark mode
         self._data = None
         self.colored = True
 
@@ -207,9 +211,9 @@ class TokenView(QTextBrowser):
             elif value is None:
                 parts.append(f"<span style='color:{NOT_SCORED}'>{text}</span>")
             elif value > 0.5:
-                parts.append(f"<span style='background:{GREEN_BG}'>{text}</span>")
+                parts.append(f"<span style='background:{GREEN_BG}; color:{TOKEN_TEXT}'>{text}</span>")
             elif value < 0.5:
-                parts.append(f"<span style='background:{RED_BG}'>{text}</span>")
+                parts.append(f"<span style='background:{RED_BG}; color:{TOKEN_TEXT}'>{text}</span>")
             else:
                 parts.append(text)
         self.setHtml(f"<div style='white-space: pre-wrap; font-size: 10.5pt'>{''.join(parts)}</div>")

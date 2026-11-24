@@ -1,4 +1,7 @@
-"""Comparison of the two MPTour variants (B: hash per digit, A: MPAC colorlists) with MPAC.
+"""Comparison of MPTour with MPAC.
+
+Variant A of MPTour (MPAC colorlists as g-functions) was removed after this comparison; it is in
+the git history (commit f2a00d5).
 
 All variants get the same prompts, messages and seeds. Reported per variant: bit accuracy,
 whole message correct, TPR / FPR (exact p-value <= alpha), z of the known message (verify,
@@ -15,7 +18,6 @@ import numpy as np
 
 from demos.demo_mpac import PROMPTS, load_model, perplexity, random_message
 from watermarks import mpac, mptour
-from watermarks.mptour_lists import MPTourListsWatermark
 from watermarks.unigram import random_edits
 
 
@@ -40,10 +42,6 @@ def main():
     tour_kw = dict(temperature=0.7, top_k=100, max_new_tokens=args.max_new_tokens, use_chat_template=use_chat)
     variants = [  # name, watermark, generate function, its sampling arguments
         ("MPTour B (hash, r=4)", mptour.MPTourWatermark(args.key, args.bits, radix=4), mptour.generate, tour_kw),
-        ("MPTour A (lists, gamma=0.25)", MPTourListsWatermark(args.key, vocab, args.bits, gamma=0.25),
-         mptour.generate, tour_kw),
-        ("MPTour A (lists, gamma=0.5)", MPTourListsWatermark(args.key, vocab, args.bits, gamma=0.5),
-         mptour.generate, tour_kw),
         ("MPAC (delta=2, gamma=0.25)", mpac.MPACWatermark(args.key, vocab, args.bits), mpac.generate,
          dict(temperature=0.7, top_p=1.0, max_new_tokens=args.max_new_tokens, use_chat_template=use_chat)),
     ]

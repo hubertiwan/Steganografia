@@ -76,7 +76,7 @@ w MPAC z δ = 2, więc ta sama wiadomość potrzebuje dłuższego tekstu.
 
 ## Porównanie z wariantem A (listy kolorów MPAC)
 
-Wariant A (`watermarks/mptour_lists/`, testy `tests/test_mptour_lists.py`) zamiast monety ½ dla
+Wariant A (usunięty z repozytorium po tym porównaniu, jest w historii gita: commit f2a00d5) zamiast monety ½ dla
 każdej cyfry używa list kolorów MPAC: osobna permutacja słownika na rundę, g = 1, gdy token jest
 na liście cyfry. Porównanie: `python -m demos.compare_mptour` (Qwen2.5-0.5B-Instruct, 10 promptów,
 200 tokenów, 8 bitów, α = 0.001, perplexity bez znaku 2.28):

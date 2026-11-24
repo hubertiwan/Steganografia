@@ -75,7 +75,6 @@ class AppState(QObject):
     model_changed = Signal(object)
     busy_changed = Signal(bool)
     history_changed = Signal()
-    documents_changed = Signal()
 
     def __init__(self):
         super().__init__()

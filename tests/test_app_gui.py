@@ -135,19 +135,25 @@ def test_export(window, qtbot, errors, tmp_path, monkeypatch):
     assert not errors and target.stat().st_size > 5000
 
 
-def test_documents_tab(window, errors, text_pdf, scanned_pdf):
-    from app import documents
-    tab = window.pages["documents"]
-    doc = documents.import_pdf(text_pdf)
-    tab.refresh(select=doc["id"])
-    assert tab.page_label.pixmap() is not None
-    tab.query.setText("z-score")
-    tab.search()
-    assert len(tab.hits) == 3
-    tab.assign_algo.setCurrentIndex(tab.assign_algo.findData("mpac"))
-    tab.assign()
-    assert documents.for_algorithm("mpac")[0][0]["id"] == doc["id"]
-    scan = documents.import_pdf(scanned_pdf)
-    tab.refresh(select=scan["id"])
-    assert "warstwy tekstowej" in tab.warning.text()
-    assert not errors
+
+
+def test_help_tab(window):
+    from app import algorithms
+    assert "documents" not in window.pages  # the PDF tab was removed
+    window.show_tab("help")
+    text = window.pages["help"].toPlainText()
+    for algo in algorithms.ALGORITHMS.values():
+        assert algo.name in text
+    for tab in ("Demonstracja", "Sprawdź tekst", "Test", "Porównanie", "Historia", "Kolory tokenów"):
+        assert tab in text
+
+
+def test_legend_shows_both_labels(qapp):
+    from PySide6.QtGui import QTextDocument
+
+    from app.gui.widgets import legend_text
+    for algo_id in ("kgw", "synthid", "mpac", "mptour"):
+        doc = QTextDocument()
+        doc.setHtml(legend_text(algo_id))
+        text = doc.toPlainText()
+        assert "nieoceniany" in text and text.count("0.5") in (0, 2), (algo_id, text)

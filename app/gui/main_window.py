@@ -2,7 +2,7 @@
 import sys
 import traceback
 
-from PySide6.QtCore import QSettings, QTimer
+from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QDialogButtonBox, QFileDialog,
                                QHBoxLayout, QLabel, QMainWindow, QMessageBox, QProgressBar, QPushButton, QTabWidget,
                                QVBoxLayout)
@@ -10,7 +10,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QDia
 from .. import APP_NAME, VERSION
 from ..model import DEFAULT_MODEL, SUGGESTED_MODELS, load_model
 from .tab_experiments import CompareTab, DemoTab, DetectTab, TestTab
-from .tab_info import AlgorithmsTab, DocumentsTab, HistoryTab
+from .tab_info import AlgorithmsTab, HelpTab, HistoryTab
 from .widgets import show_error
 from .worker import AppState
 
@@ -66,9 +66,9 @@ class MainWindow(QMainWindow):
         self.pages = {"algorithms": AlgorithmsTab(self.state), "demo": DemoTab(self.state),
                       "detect": DetectTab(self.state), "test": TestTab(self.state),
                       "compare": CompareTab(self.state), "history": HistoryTab(self.state),
-                      "documents": DocumentsTab(self.state)}
+                      "help": HelpTab(self.state)}
         titles = {"algorithms": "Algorytmy", "demo": "Demonstracja", "detect": "Sprawdź tekst", "test": "Test",
-                  "compare": "Porównanie", "history": "Historia", "documents": "Dokumenty PDF"}
+                  "compare": "Porównanie", "history": "Historia", "help": "Pomoc"}
         for key, page in self.pages.items():
             self.tabs.addTab(page, titles[key])
         self.setCentralWidget(self.tabs)
@@ -77,7 +77,9 @@ class MainWindow(QMainWindow):
         menu.addAction("Wczytaj model…", self.choose_model)
         menu.addSeparator()
         menu.addAction("Zakończ", self.close)
-        self.menuBar().addMenu("Pomoc").addAction("O programie", self.about)
+        help_menu = self.menuBar().addMenu("Pomoc")
+        help_menu.addAction("Jak korzystać z aplikacji", lambda: self.show_tab("help"))
+        help_menu.addAction("O programie", self.about)
 
         self.model_label = QLabel("Model: nie wczytano")
         self.busy = QProgressBar()
@@ -137,7 +139,11 @@ def run():
     app = QApplication.instance() or QApplication(sys.argv)
     app.setApplicationName(APP_NAME)
     app.setStyle("Fusion")
-    app.setPalette(app.style().standardPalette())  # always light, also when the system uses a dark theme
+    # always light: since Qt 6.5 Fusion follows the dark theme of Windows and then the text on the colored
+    # tokens was light on a light background
+    if hasattr(app.styleHints(), "setColorScheme"):  # Qt >= 6.8
+        app.styleHints().setColorScheme(Qt.ColorScheme.Light)
+    app.setPalette(app.style().standardPalette())
     app.setStyleSheet(STYLE)
 
     def excepthook(kind, exc, tb):  # last resort: an error in the GUI thread does not close the app
